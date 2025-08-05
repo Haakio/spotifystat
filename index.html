@@ -515,7 +515,7 @@
 
     <script>
         // Configuration Spotify API
-        const CLIENT_ID = '7c54cf29b9af41b6aa5ee50ddc99b3fb'; // Tu dois remplacer par ton vrai Client ID
+        const CLIENT_ID = 'TON_CLIENT_ID_ICI'; // Tu dois remplacer par ton vrai Client ID
         const REDIRECT_URI = window.location.origin + window.location.pathname;
         const SCOPES = 'user-read-private user-read-email user-top-read user-read-recently-played';
 
@@ -537,25 +537,34 @@
 
         // Vérifier si on a un token dans l'URL (retour de Spotify)
         function checkForToken() {
+            console.log('Checking for token...');
             const hash = window.location.hash;
+            console.log('Hash:', hash);
+            
             if (hash) {
-                const token = hash.split('&')[0].split('=')[1];
+                // Parse tous les paramètres du hash
+                const params = new URLSearchParams(hash.substring(1));
+                const token = params.get('access_token');
+                console.log('Token from URL:', token);
+                
                 if (token) {
                     accessToken = token;
                     window.location.hash = '';
+                    console.log('Token found, showing dashboard');
                     showDashboard();
                     loadUserData();
                     return;
                 }
             }
             
-            // Vérifier le localStorage
-            const savedToken = localStorage.getItem('spotify_access_token');
-            if (savedToken) {
-                accessToken = savedToken;
-                showDashboard();
-                loadUserData();
-            }
+            console.log('No token in URL, checking localStorage');
+            // Vérifier le localStorage (mais ne pas l'utiliser car les tokens expirent)
+            // const savedToken = localStorage.getItem('spotify_access_token');
+            // if (savedToken) {
+            //     accessToken = savedToken;
+            //     showDashboard();
+            //     loadUserData();
+            // }
         }
 
         // Connexion Spotify
