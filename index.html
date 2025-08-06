@@ -904,6 +904,9 @@ document.getElementById('passwordInput').addEventListener('keypress', (e) => {
         const saveConfigBtn = document.getElementById('saveConfigBtn');
 
         function initializeApp() {
+            / Vérifier si on a un token valide pour éviter de re-demander le warning
+                 checkForAuthorizationCode();
+            
             // Pré-remplir les champs de configuration
             clientIdInput.value = CLIENT_ID;
             redirectUriInput.value = REDIRECT_URI;
