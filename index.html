@@ -813,6 +813,7 @@ function startCountdown() {
             clearInterval(timer);
             countdownEl.textContent = "✅ Vous pouvez maintenant entrer le mot de passe";
             passwordInput.disabled = false;
+            continueBtn.disabled = false;
             passwordInput.focus();
             canEnter = true;
         }
