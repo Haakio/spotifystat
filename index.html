@@ -794,6 +794,8 @@
         // Protection par mot de passe
 let countdownTimer = 15;
 let canEnter = false;
+let attemptCount = 0; // 👈 AJOUTE ÇA
+const maxAttempts = 3;
 
 // Initialiser la protection
 window.addEventListener('load', () => {
@@ -826,7 +828,6 @@ function startCountdown() {
     }, 1000);
 }
 
-// Vérification du mot de passe
 document.getElementById('continueBtn').addEventListener('click', () => {
     const password = document.getElementById('passwordInput').value.toLowerCase();
     
@@ -836,20 +837,57 @@ document.getElementById('continueBtn').addEventListener('click', () => {
     }
     
     if (password === 'valorant') {
-    // Sauvegarder qu'on a déjà passé le warning
-    localStorage.setItem('spotify_warning_passed', 'true');
-    document.getElementById('warningOverlay').style.display = 'none';
-    showSuccess('🎉 Accès autorisé ! Bienvenue sur Spotify Stats');
-    initializeApp();
-}
+        // Sauvegarder qu'on a déjà passé le warning
+        localStorage.setItem('spotify_warning_passed', 'true');
+        document.getElementById('warningOverlay').style.display = 'none';
+        showSuccess('🎉 Accès autorisé ! Bienvenue sur Spotify Stats');
+        initializeApp();
     } else {
-        showError('❌ Mot de passe incorrect ! Contactez @Haakio sur Discord');
-        document.getElementById('passwordInput').value = '';
-        document.getElementById('passwordInput').style.borderColor = '#ff4444';
+        attemptCount++;
+        const remainingAttempts = maxAttempts - attemptCount;
         
-        setTimeout(() => {
-            document.getElementById('passwordInput').style.borderColor = 'rgba(29, 185, 84, 0.3)';
-        }, 2000);
+        if (attemptCount >= maxAttempts) {
+            // Plus de tentatives = fermer la page
+            alert('🚫 ACCÈS REFUSÉ\n\nVous avez épuisé vos 3 tentatives.\nCette application ne vous est pas destinée.\n\nLa page va se fermer automatiquement...');
+            
+            setTimeout(() => {
+                window.close();
+                // Si window.close() ne marche pas (navigateurs modernes)
+                document.body.innerHTML = `
+                    <div style="
+                        display: flex; 
+                        align-items: center; 
+                        justify-content: center; 
+                        height: 100vh; 
+                        background: #0d1821; 
+                        color: #ff4444; 
+                        text-align: center;
+                        font-family: Arial;
+                    ">
+                        <div>
+                            <h1>🚫 ACCÈS REFUSÉ</h1>
+                            <p>Cette application ne vous est pas destinée.</p>
+                            <p>Fermez cette page manuellement.</p>
+                        </div>
+                    </div>
+                `;
+            }, 3000);
+        } else {
+            // Encore des tentatives
+            const message = remainingAttempts === 1 
+                ? `❌ Mot de passe incorrect !\n\n⚠️ DERNIÈRE CHANCE !\nIl vous reste ${remainingAttempts} tentative.\n\nSi vous vous êtes trompé, recommencez attentivement.\nSinon contactez @Haakio sur Discord.`
+                : `❌ Mot de passe incorrect !\n\nIl vous reste ${remainingAttempts} tentatives.\n\nVérifiez votre saisie ou contactez @Haakio sur Discord.`;
+            
+            alert(message);
+            
+            document.getElementById('passwordInput').value = '';
+            document.getElementById('passwordInput').style.borderColor = '#ff4444';
+            document.getElementById('passwordInput').focus();
+            
+            setTimeout(() => {
+                document.getElementById('passwordInput').style.borderColor = 'rgba(29, 185, 84, 0.3)';
+            }, 2000);
+        }
     }
 });
 
