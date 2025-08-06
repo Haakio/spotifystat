@@ -412,6 +412,41 @@
             font-weight: 600;
         }
 
+        .track-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 10px;
+    margin-bottom: 10px;
+    transition: all 0.3s ease;
+}
+
+.track-item:hover {
+    background: rgba(29, 185, 84, 0.1);
+    transform: translateX(5px);
+}
+
+.track-stats {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    min-width: 80px;
+}
+
+.track-duration {
+    color: #1db954;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.track-album {
+    color: #666;
+    font-size: 0.8rem;
+    margin-top: 2px;
+}
+
         .loading-overlay {
             position: fixed;
             top: 0;
@@ -942,11 +977,23 @@ async function loadSection(section) {
 }
 
 // Afficher la liste des titres
+// Afficher la liste des titres
 async function displayTracks() {
     const tracksList = document.getElementById('tracksList');
     if (!userData.tracks) return;
     
-    tracksList.innerHTML = '';
+    // Calculer le temps total
+    const totalMs = userData.tracks.slice(0, 20).reduce((sum, track) => sum + track.duration_ms, 0);
+    const totalMinutes = Math.floor(totalMs / 60000);
+    const totalHours = Math.floor(totalMinutes / 60);
+    const remainingMinutes = totalMinutes % 60;
+    
+    tracksList.innerHTML = `
+        <div style="text-align: center; margin-bottom: 20px; padding: 15px; background: rgba(29, 185, 84, 0.1); border-radius: 10px;">
+            <h4 style="color: #1db954; margin-bottom: 5px;">📊 Temps total des top 20</h4>
+            <p style="color: #b3b3b3;">${totalHours}h ${remainingMinutes}min de musique</p>
+        </div>
+    `;
 
     for (let i = 0; i < Math.min(userData.tracks.length, 20); i++) {
         const track = userData.tracks[i];
@@ -962,8 +1009,12 @@ async function displayTracks() {
             <div class="artist-info">
                 <div class="artist-name">${track.name}</div>
                 <div class="artist-genres">${track.artists.map(a => a.name).join(', ')}</div>
+                <div class="track-album">${track.album.name}</div>
             </div>
-            <div class="artist-popularity">${track.popularity}% - ${duration}</div>
+            <div class="track-stats">
+                <div class="track-duration">${duration}</div>
+                <div style="color: #1db954; font-size: 0.8rem;">#${i + 1}</div>
+            </div>
         `;
         tracksList.appendChild(trackItem);
     }
