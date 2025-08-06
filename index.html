@@ -1013,6 +1013,9 @@ document.getElementById('passwordInput').addEventListener('keypress', (e) => {
             
             if (code) {
                 console.log('Authorization code received:', code);
+
+                document.getElementById('warningOverlay').style.display = 'none';
+                
                 showLoading(true);
                 
                 try {
