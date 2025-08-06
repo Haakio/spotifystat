@@ -797,9 +797,20 @@ let canEnter = false;
 let attemptCount = 0; // 👈 AJOUTE ÇA
 const maxAttempts = 3;
 
-// Initialiser la protection
+// Remplace cette partie dans window.addEventListener('load') :
 window.addEventListener('load', () => {
-       startCountdown();
+    // ✅ VÉRIFIE D'ABORD s'il y a un code Spotify
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
+    
+    if (code) {
+        // Si on revient de Spotify, pas de warning
+        document.getElementById('warningOverlay').style.display = 'none';
+        initializeApp();
+    } else {
+        // Sinon, afficher le warning normalement
+        startCountdown();
+    }
 });
 
 function startCountdown() {
@@ -904,9 +915,6 @@ document.getElementById('passwordInput').addEventListener('keypress', (e) => {
         const saveConfigBtn = document.getElementById('saveConfigBtn');
 
         function initializeApp() {
-            // Vérifier si on a un token valide pour éviter de re-demander le warning
-                 checkForAuthorizationCode();
-            
             // Pré-remplir les champs de configuration
             clientIdInput.value = CLIENT_ID;
             redirectUriInput.value = REDIRECT_URI;
