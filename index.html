@@ -905,13 +905,8 @@
                 document.getElementById('userName').textContent = userResponse.display_name || 'Utilisateur Spotify';
                 document.getElementById('userFollowers').textContent = `Abonnés: ${userResponse.followers?.total || 0}`;
                 
-                if (userResponse.images && userResponse.images[0]) {
-    document.getElementById('userAvatar').src = userResponse.images[0].url;
-} else {
-    // Image par défaut si pas de photo de profil
-    document.getElementById('userAvatar').src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAiIGhlaWdodD0iNTAiIHZpZXdCb3g9IjAgMCA1MCA1MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjUiIGN5PSIyNSIgcj0iMjUiIGZpbGw9IiMxZGI5NTQiLz4KPGR3ZyB4PSIxNSIgeT0iMTUiIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgZmlsbD0iIzAwMCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE2IiBmb250LXdlaWdodD0iYm9sZCI+8J+OtTwvdGV4dD4KPC9zdmc+';
-}
-                // Charger les stats
+               const avatarUrl = userResponse.images?.[0]?.url || 'https://via.placeholder.com/50x50/1db954/000000?text=🎵';
+                document.getElementById('userAvatar').src = avatarUrl;              // Charger les stats
                 await loadStats(currentTimeRange);
                 
             } catch (error) {
