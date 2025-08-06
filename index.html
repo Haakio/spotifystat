@@ -622,6 +622,8 @@
 
         let accessToken = null;
         let currentTimeRange = 'short_term';
+        let currentSection = 'artists';
+        let userData = {};
 
         // Éléments DOM
         const loginScreen = document.getElementById('loginScreen');
@@ -887,33 +889,119 @@
         }
 
         // Charger les statistiques
-        async function loadStats(timeRange) {
-            try {
-                // Top artistes
-                const artistsResponse = await spotifyAPI(`/me/top/artists?time_range=${timeRange}&limit=10`);
-                
-                // Top titres
-                const tracksResponse = await spotifyAPI(`/me/top/tracks?time_range=${timeRange}&limit=50`);
+        // Charger les statistiques
+async function loadStats(timeRange) {
+    try {
+        // Top artistes
+        const artistsResponse = await spotifyAPI(`/me/top/artists?time_range=${timeRange}&limit=50`);
+        
+        // Top titres
+        const tracksResponse = await spotifyAPI(`/me/top/tracks?time_range=${timeRange}&limit=50`);
 
-                // Mettre à jour les stats
-                document.getElementById('totalArtists').textContent = artistsResponse.items.length;
-                document.getElementById('totalTracks').textContent = tracksResponse.items.length;
-                
-                // Calculer popularité moyenne
-                if (tracksResponse.items.length > 0) {
-                    const avgPop = tracksResponse.items.reduce((sum, track) => sum + track.popularity, 0) / tracksResponse.items.length;
-                    document.getElementById('avgPopularity').textContent = Math.round(avgPop) + '%';
-                }
+        // Sauvegarder pour les autres sections
+        userData.artists = artistsResponse.items;
+        userData.tracks = tracksResponse.items;
 
-                // Afficher les artistes
-                displayArtists(artistsResponse.items);
-
-            } catch (error) {
-                console.error('Error loading stats:', error);
-                showError('❌ Erreur lors du chargement des statistiques');
-            }
+        // Mettre à jour les stats
+        document.getElementById('totalArtists').textContent = artistsResponse.items.length;
+        document.getElementById('totalTracks').textContent = tracksResponse.items.length;
+        
+        // Calculer popularité moyenne
+        if (tracksResponse.items.length > 0) {
+            const avgPop = tracksResponse.items.reduce((sum, track) => sum + track.popularity, 0) / tracksResponse.items.length;
+            document.getElementById('avgPopularity').textContent = Math.round(avgPop) + '%';
         }
 
+        // Recharger la section actuelle
+        await loadSection(currentSection);
+
+    } catch (error) {
+        console.error('Error loading stats:', error);
+        showError('❌ Erreur lors du chargement des statistiques');
+    }
+}
+
+       // Charger une section spécifique
+async function loadSection(section) {
+    try {
+        switch(section) {
+            case 'artists':
+                displayArtists(userData.artists || []);
+                break;
+            case 'tracks':
+                await displayTracks();
+                break;
+            case 'genres':
+                displayGenres();
+                break;
+        }
+    } catch (error) {
+        console.error('Error loading section:', error);
+        showError(`❌ Erreur lors du chargement de la section ${section}`);
+    }
+}
+
+// Afficher la liste des titres
+async function displayTracks() {
+    const tracksList = document.getElementById('tracksList');
+    if (!userData.tracks) return;
+    
+    tracksList.innerHTML = '';
+
+    for (let i = 0; i < Math.min(userData.tracks.length, 20); i++) {
+        const track = userData.tracks[i];
+        const trackItem = document.createElement('div');
+        trackItem.className = 'track-item';
+        
+        const duration = Math.floor(track.duration_ms / 60000) + ':' + 
+                       String(Math.floor((track.duration_ms % 60000) / 1000)).padStart(2, '0');
+        
+        trackItem.innerHTML = `
+            <div class="artist-rank">${i + 1}</div>
+            <img class="artist-image" src="${track.album.images[0]?.url || ''}" alt="${track.name}">
+            <div class="artist-info">
+                <div class="artist-name">${track.name}</div>
+                <div class="artist-genres">${track.artists.map(a => a.name).join(', ')}</div>
+            </div>
+            <div class="artist-popularity">${track.popularity}% - ${duration}</div>
+        `;
+        tracksList.appendChild(trackItem);
+    }
+}
+
+// Afficher les genres
+function displayGenres() {
+    const genreChart = document.getElementById('genreChart');
+    if (!userData.artists) return;
+    
+    // Compter les genres
+    const genreCount = {};
+    userData.artists.forEach(artist => {
+        artist.genres.forEach(genre => {
+            genreCount[genre] = (genreCount[genre] || 0) + 1;
+        });
+    });
+
+    // Trier par popularité
+    const sortedGenres = Object.entries(genreCount)
+        .sort(([,a], [,b]) => b - a)
+        .slice(0, 12);
+
+    genreChart.innerHTML = '';
+    sortedGenres.forEach(([genre, count]) => {
+        const genreItem = document.createElement('div');
+        genreItem.className = 'artist-item';
+        genreItem.innerHTML = `
+            <div class="artist-rank">${count}</div>
+            <div class="artist-info">
+                <div class="artist-name">${genre}</div>
+                <div class="artist-genres">${count} artiste${count > 1 ? 's' : ''}</div>
+            </div>
+        `;
+        genreChart.appendChild(genreItem);
+    });
+}
+        
         // Afficher la liste des artistes
         function displayArtists(artists) {
             const artistList = document.getElementById('artistList');
@@ -950,6 +1038,32 @@
                 showLoading(false);
             });
         });
+
+        // Gestion des onglets de sections
+const tabBtns = document.querySelectorAll('.tab-btn');
+tabBtns.forEach(btn => {
+    btn.addEventListener('click', async () => {
+        showLoading(true);
+        
+        // Mettre à jour les boutons
+        tabBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        
+        // Cacher toutes les sections
+        document.querySelectorAll('.content-section').forEach(section => {
+            section.style.display = 'none';
+        });
+        
+        // Afficher la section sélectionnée
+        currentSection = btn.dataset.section;
+        document.getElementById(`section-${currentSection}`).style.display = 'block';
+        
+        // Charger les données
+        await loadSection(currentSection);
+        
+        showLoading(false);
+    });
+});
 
         // Fonction pour appeler l'API Spotify
         async function spotifyAPI(endpoint) {
