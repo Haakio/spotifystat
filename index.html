@@ -539,6 +539,111 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        .warning-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(13, 24, 33, 0.95);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    backdrop-filter: blur(10px);
+}
+
+.warning-modal {
+    background: linear-gradient(135deg, #1a2332 0%, #0d1821 100%);
+    border: 2px solid #ff4444;
+    border-radius: 20px;
+    padding: 40px;
+    max-width: 500px;
+    text-align: center;
+    animation: warningPulse 2s infinite;
+}
+
+.warning-title {
+    color: #ff4444;
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+    text-shadow: 0 0 10px rgba(255, 68, 68, 0.5);
+}
+
+.warning-text {
+    color: #ffffff;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin-bottom: 30px;
+}
+
+.discord-mention {
+    color: #5865f2;
+    font-weight: 600;
+    background: rgba(88, 101, 242, 0.2);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.password-section {
+    margin-top: 30px;
+}
+
+.password-input {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(29, 185, 84, 0.3);
+    border-radius: 10px;
+    padding: 15px;
+    color: #ffffff;
+    font-size: 1.1rem;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.password-input:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.continue-btn {
+    background: #1db954;
+    color: #000;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 25px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+.continue-btn:disabled {
+    background: #666;
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.continue-btn:not(:disabled):hover {
+    background: #1ed760;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(29, 185, 84, 0.3);
+}
+
+.countdown {
+    color: #1db954;
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 15px;
+}
+
+@keyframes warningPulse {
+    0%, 100% { border-color: #ff4444; }
+    50% { border-color: #ff6666; }
+}
+        
     </style>
 </head>
 <body>
@@ -555,6 +660,32 @@
             </div>
         </div>
 
+        <!-- Avertissement de sécurité -->
+<div class="warning-overlay" id="warningOverlay">
+    <div class="warning-modal">
+        <div class="warning-title">⚠️ AVERTISSEMENT ⚠️</div>
+        <div class="warning-text">
+            <p><strong>🔒 SÉCURITÉ IMPORTANTE :</strong></p>
+            <p>Si vous possédez le Client ID Spotify, il est <strong style="color: #ff4444;">STRICTEMENT INTERDIT</strong> de le partager sans passer par @Haakio !</p>
+            <br>
+            <p>📞 Pour obtenir l'accès, contactez :</p>
+            <p><span class="discord-mention">@Haakio</span> sur Discord</p>
+        </div>
+        
+        <div class="password-section">
+            <div class="countdown" id="countdown">Attendez 15 secondes...</div>
+            <input type="password" 
+                   class="password-input" 
+                   id="passwordInput" 
+                   placeholder="Entrez le mot de passe"
+                   disabled>
+            <button class="continue-btn" id="continueBtn" disabled>
+                Continuer vers l'application
+            </button>
+        </div>
+    </div>
+</div>
+
         <div class="main-content">
             <!-- Écran de connexion -->
             <div class="login-screen" id="loginScreen">
@@ -568,7 +699,6 @@
                     <button class="config-btn" id="saveConfigBtn">Sauvegarder Configuration</button>
                     <div style="font-size: 12px; color: #b3b3b3; margin-top: 10px;">
                         📖 <a href="#" id="helpLink" style="color: #1db954;">Comment obtenir mon Client ID ?</a>
-                        🆘 <a href="#" id="helpLink" style="color: #1db954;">Merci de mp @Haakio pour le clien id (id est secret il faut avoir la permission de @Haakio pour le donner)</a>
                     </div>
                 </div>
 
@@ -661,6 +791,65 @@
         let currentSection = 'artists';
         let userData = {};
 
+        // Protection par mot de passe
+let countdownTimer = 15;
+let canEnter = false;
+
+// Initialiser la protection
+window.addEventListener('load', () => {
+    startCountdown();
+});
+
+function startCountdown() {
+    const countdownEl = document.getElementById('countdown');
+    const passwordInput = document.getElementById('passwordInput');
+    const continueBtn = document.getElementById('continueBtn');
+    
+    const timer = setInterval(() => {
+        countdownEl.textContent = `Attendez ${countdownTimer} secondes...`;
+        countdownTimer--;
+        
+        if (countdownTimer < 0) {
+            clearInterval(timer);
+            countdownEl.textContent = "✅ Vous pouvez maintenant entrer le mot de passe";
+            passwordInput.disabled = false;
+            passwordInput.focus();
+            canEnter = true;
+        }
+    }, 1000);
+}
+
+// Vérification du mot de passe
+document.getElementById('continueBtn').addEventListener('click', () => {
+    const password = document.getElementById('passwordInput').value.toLowerCase();
+    
+    if (!canEnter) {
+        alert('⏰ Attendez la fin du compte à rebours !');
+        return;
+    }
+    
+    if (password === 'valorant') {
+        document.getElementById('warningOverlay').style.display = 'none';
+        showSuccess('🎉 Accès autorisé ! Bienvenue sur Spotify Stats');
+        initializeApp();
+    } else {
+        showError('❌ Mot de passe incorrect ! Contactez @Haakio sur Discord');
+        document.getElementById('passwordInput').value = '';
+        document.getElementById('passwordInput').style.borderColor = '#ff4444';
+        
+        setTimeout(() => {
+            document.getElementById('passwordInput').style.borderColor = 'rgba(29, 185, 84, 0.3)';
+        }, 2000);
+    }
+});
+
+// Permettre Enter pour valider
+document.getElementById('passwordInput').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter' && canEnter) {
+        document.getElementById('continueBtn').click();
+    }
+});
+
         // Éléments DOM
         const loginScreen = document.getElementById('loginScreen');
         const dashboard = document.getElementById('dashboard');
@@ -672,11 +861,6 @@
         const clientIdInput = document.getElementById('clientIdInput');
         const redirectUriInput = document.getElementById('redirectUriInput');
         const saveConfigBtn = document.getElementById('saveConfigBtn');
-
-        // Initialisation
-        window.addEventListener('load', () => {
-            initializeApp();
-        });
 
         function initializeApp() {
             // Pré-remplir les champs de configuration
