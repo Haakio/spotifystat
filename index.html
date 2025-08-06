@@ -314,6 +314,44 @@
             font-size: 1.5rem;
         }
 
+        .content-section {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(29, 185, 84, 0.2);
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 20px;
+    animation: fadeIn 1.4s ease-out;
+}
+
+.section-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+}
+
+.tab-btn {
+    background: rgba(29, 185, 84, 0.1);
+    border: 1px solid rgba(29, 185, 84, 0.3);
+    color: #1db954;
+    padding: 10px 20px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.tab-btn:hover,
+.tab-btn.active {
+    background: #1db954;
+    color: #000;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(29, 185, 84, 0.3);
+}
+
         .artist-list {
             display: flex;
             flex-direction: column;
@@ -545,11 +583,28 @@
                     </div>
                 </div>
 
-                <div class="top-artists">
-                    <h3>Tes Artistes Favoris</h3>
-                    <div class="artist-list" id="artistList">
-                        <!-- Les artistes seront chargés ici -->
-                    </div>
+                <div class="section-tabs">
+    <button class="tab-btn active" data-section="artists">🎤 Artistes</button>
+    <button class="tab-btn" data-section="tracks">🎵 Titres</button>
+    <button class="tab-btn" data-section="genres">🎨 Genres</button>
+</div>
+
+<div class="content-section" id="section-artists">
+    <h3>Tes Artistes Favoris</h3>
+    <div class="artist-list" id="artistList">
+        <!-- Les artistes seront chargés ici -->
+    </div>
+</div>
+
+<div class="content-section" id="section-tracks" style="display: none;">
+    <h3>Tes Titres Favoris</h3>
+    <div id="tracksList"></div>
+</div>
+
+<div class="content-section" id="section-genres" style="display: none;">
+    <h3>Tes Genres Musicaux</h3>
+    <div class="genre-chart" id="genreChart"></div>
+</div>
                 </div>
             </div>
         </div>
