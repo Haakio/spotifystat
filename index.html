@@ -797,7 +797,13 @@ let canEnter = false;
 
 // Initialiser la protection
 window.addEventListener('load', () => {
-    startCountdown();
+    // Vérifier si on a déjà passé le warning
+    if (localStorage.getItem('spotify_warning_passed') === 'true') {
+        document.getElementById('warningOverlay').style.display = 'none';
+        initializeApp();
+    } else {
+        startCountdown();
+    }
 });
 
 function startCountdown() {
@@ -830,9 +836,12 @@ document.getElementById('continueBtn').addEventListener('click', () => {
     }
     
     if (password === 'valorant') {
-        document.getElementById('warningOverlay').style.display = 'none';
-        showSuccess('🎉 Accès autorisé ! Bienvenue sur Spotify Stats');
-        initializeApp();
+    // Sauvegarder qu'on a déjà passé le warning
+    localStorage.setItem('spotify_warning_passed', 'true');
+    document.getElementById('warningOverlay').style.display = 'none';
+    showSuccess('🎉 Accès autorisé ! Bienvenue sur Spotify Stats');
+    initializeApp();
+}
     } else {
         showError('❌ Mot de passe incorrect ! Contactez @Haakio sur Discord');
         document.getElementById('passwordInput').value = '';
